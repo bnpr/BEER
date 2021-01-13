@@ -1,0 +1,3 @@
+[submodule "Malt"]
+	path = Malt
+	url = https://github.com/bnpr/Malt
