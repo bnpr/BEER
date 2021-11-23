@@ -5,9 +5,9 @@ from BlenderMalt import MaltProperties
 from BlenderMalt import MaltMaterial
 
 
-class Beer_PT_MainPanel(bpy.types.Panel):
+class BEER_PT_MainPanel(bpy.types.Panel):
     bl_label = "BEER"
-    bl_idname = "PT_BEER_MAINPANEL"
+    bl_idname = "BEER_PT_MAINPANEL"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'BEER'
@@ -26,17 +26,17 @@ class Beer_PT_MainPanel(bpy.types.Panel):
         if ob:
             row = layout.row()
             row.operator("material.new_beer", text= "New BEER Material")
-            if ob.active_material.beer.is_beer_mat:
+            if ob.active_material and ob.active_material.beer.is_beer_mat:
                 row = layout.row()
                 ob.active_material.beer.draw_ui(layout)
 
             
 def register():
-    bpy.utils.register_class(Beer_PT_MainPanel)
+    bpy.utils.register_class(BEER_PT_MainPanel)
 
 
 def unregister():
-    bpy.utils.unregister_class(Beer_PT_MainPanel)
+    bpy.utils.unregister_class(BEER_PT_MainPanel)
 
 
 if __name__ == "__main__":

@@ -127,7 +127,6 @@ def get_blend(blend):
         return "blend_burn"
 
 #using mix functions from blender/source/blender/gpu/shaders/material/gpu_shader_material_mix_rgb.glsl    
-
 def get_blend_source(blend):
     if blend is Blends.DEFAULT:
         return '''
@@ -621,7 +620,7 @@ class BeerMaterial(bpy.types.PropertyGroup):
         row.operator('beer.compile_layers', text='Update BEER Material')
         row = layout.row()
 
-        row.template_list("Beer_UL_LayerList", "", self, "layers", self, "shader_index")
+        row.template_list("BEER_UL_LayerList", "", self, "layers", self, "shader_index")
 
         col = row.column(align=True)
 
@@ -637,10 +636,10 @@ class BeerMaterial(bpy.types.PropertyGroup):
         row.operator('beer.new_layer', text='New Layer')
         row = layout.row() 
 
-        self.layers[self.shader_index].draw_ui(layout)
+        if self.layers:
+            self.layers[self.shader_index].draw_ui(layout)
 
-#Using code from MALT
-
+#File handling code from BlenderMalt/MaltNodes.py
     def get_generated_source_dir(self):
         import os, tempfile
         base_path = tempfile.gettempdir()
@@ -706,7 +705,7 @@ class BeerMaterialOperator(bpy.types.Operator):
         self.execute(context)
         return {'RUNNING_MODAL'}
 
-class Beer_UL_LayerList(bpy.types.UIList):
+class BEER_UL_LayerList(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
         # We could write some code to decide which icon to use here...
         custom_icon = 'OBJECT_DATAMODE'
@@ -748,6 +747,7 @@ class LayerDeleteOperatorOperator(bpy.types.Operator):
         layers = context.object.active_material.beer.layers
         shader_index =  context.object.active_material.beer.shader_index
 
+        
         layers.remove(shader_index)
         context.object.active_material.beer.shader_index = min(max(0, shader_index - 1), len(layers) - 1)
         context.object.active_material.beer.index_layers()
@@ -794,22 +794,24 @@ class CompileLayerOperator(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         layers = context.object.active_material.beer.layers
-        safe = True
-        for layer in layers:
-            if layer.material:
-                layer_safe = layer.material.malt.get_source_path().endswith('.mesh.glsl')
-                layer_safe = layer_safe and layer.material.malt.compiler_error == ''
-                safe = safe and layer_safe
-            else: 
-                return False
-        return safe
+        if layers:
+            safe = True
+            for layer in layers:
+                if layer.material:
+                    layer_safe = layer.material.malt.get_source_path().endswith('.mesh.glsl')
+                    layer_safe = layer_safe and layer.material.malt.compiler_error == ''
+                    safe = safe and layer_safe
+                else: 
+                    return False
+            return safe
+        return False
 
     def execute(self, context):
-        ob = context.object
-        layers = ob.active_material.beer.layers
+        beer_mat = context.object.active_material.beer
+        layers = beer_mat.layers
         compiled_source = "".join(compile_full_source(layers))
         print("saving source")
-        ob.active_material.beer.update_file(compiled_source)
+        beer_mat.update_file(compiled_source)
         print("finished")
         return{'FINISHED'}
 
@@ -817,7 +819,7 @@ class CompileLayerOperator(bpy.types.Operator):
 def register():
     bpy.utils.register_class(BeerMaterialOperator)
     bpy.utils.register_class(CompileLayerOperator)
-    bpy.utils.register_class(Beer_UL_LayerList)
+    bpy.utils.register_class(BEER_UL_LayerList)
     bpy.utils.register_class(LayerNewOperator)
     bpy.utils.register_class(LayerDeleteOperatorOperator)
     bpy.utils.register_class(LayerMoveOperator)
@@ -833,6 +835,6 @@ def unregister():
     bpy.utils.unregister_class(LayerMoveOperator)
     bpy.utils.unregister_class(LayerDeleteOperatorOperator)
     bpy.utils.unregister_class(LayerNewOperator)
-    bpy.utils.unregister_class(Beer_UL_LayerList)
+    bpy.utils.unregister_class(BEER_UL_LayerList)
     bpy.utils.unregister_class(CompileLayerOperator)
     bpy.utils.unregister_class(BeerMaterialOperator)

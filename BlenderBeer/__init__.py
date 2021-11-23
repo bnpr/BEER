@@ -1,10 +1,12 @@
+# Copyright (c) 2021 BlenderNPR and contributors. MIT license. 
+
 bl_info = {
     "name" : "BlenderBeer",
     "author" : "Alice Lawrie",
-    "description" : "",
+    "description" : "A UI for a layer-based rendering system using the Malt backend",
     "blender" : (2, 80, 0),
     "version" : (0, 0, 1),
-    "category" : "Generic"
+    "category" : "Rendering"
 }
 
 import sys, os
