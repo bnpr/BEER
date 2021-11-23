@@ -9,7 +9,7 @@ There will be 3 interfaces to create and to assemble shaders for BEER:
 2. Malt nodes (Code like node tree)
 3. Layer stack (BEER UI)
 
-Advanced users can create custom rendering pipelines optimize for their production.
+Advanced users will be able create custom rendering pipelines optimize for their production.
 
 Development update will be posted at: https://blendernpr.org/beer/
 
@@ -17,6 +17,13 @@ Development update will be posted at: https://blendernpr.org/beer/
 Installation of the *BlenderBeer* addon for *Blender* currently requires *prior* installation of:
 1. [BlenderMalt](https://github.com/bnpr/Malt)
 2. [Pygments](https://github.com/pygments/pygments) as a module for *Blender.* Future releases will have a stripped down version of *Pygments* included.
+
+# Installation
+- Create a user script folder if you don't have one already:
+[*Blender > Preferences > File Paths > Scripts*](https://docs.blender.org/manual/en/latest/editors/preferences/file_paths.html)
+- Install [BlenderMalt](https://github.com/bnpr/Malt)
+- Extract [Pygments](https://github.com/pygments/pygments) to your ```scripts\modules\``` folder.
+- Extract *BlenderBeer* to your ```scripts\addons\``` folder.
 
 # Instructions
 After installation, switch the render-engine to *Malt*. A new panel will be accessible in the 3D view window. 

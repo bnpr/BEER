@@ -202,9 +202,9 @@ void mix_div(float fac, vec4 col1, vec4 col2, out vec4 outcol){
 
 void blend_divide(inout PixelOutput base, in PixelOutput blending){
     base.line_width = blending.line_width;
-    mix_divide(blending.line_color.a, base.color, blending.line_color, base.line_color);
+    mix_div(blending.line_color.a, base.color, blending.line_color, base.line_color);
 
-    mix_divide(blending.color.a, base.color, blending.color, base.color);
+    mix_div(blending.color.a, base.color, blending.color, base.color);
 }
         '''
     elif blend is Blends.SCREEN:
@@ -673,7 +673,10 @@ class BeerMaterial(bpy.types.PropertyGroup):
         index = 0
         while index < len(self.layers):
             self.layers[index].reindex(index)
-            self.layers[index].name = "Layer " + str(self.layers[index].index)
+            name = "Layer " + str(self.layers[index].index)
+            if self.layers[index].material:
+                name = name + " - " + str(self.layers[index].material.name)
+            self.layers[index].name = name
             index = index + 1
 
     def copy_layer_property(self, layer):
