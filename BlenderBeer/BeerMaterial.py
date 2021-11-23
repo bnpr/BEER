@@ -98,7 +98,7 @@ def layer_enum_to_index(enum):
     return int(layer_index)
 
 def get_prefix(index):
-    return "beergen" + str(index) + "_"
+    return "beergen" + str(index)
 
 def get_blend(blend):
     if blend is Blends.DEFAULT:
@@ -427,6 +427,7 @@ def lex_passes(token_generator):
     name_flag = False
     type_flag = False
     function_flag = False
+    comment_flag = False
     declared_functions = []
 
     for ttype, value in r_tokens:
@@ -450,25 +451,35 @@ def lex_passes(token_generator):
     
     for ttype, value in tokens:
         ptype = str(ttype)
-        if dot_flag:
-            if str(ttype) != "Token.Operator" and str(ttype) != "Token.Punctuation":
-                ptype = "Token.Other"
+        if comment_flag:
+            if '\n' in str(value) or '\r' in str(value):
+                comment_flag = False
             else:
-                dot_flag = False
-        if str(value) == ".":
-            dot_flag = True
-
-        if str(ttype) == "Token.Keyword.Type":
-            type_flag = True
+                ptype = "Token.Comment"
         else:
-            if str(ttype) == "Token.Name.Function":
-                if type_flag:
-                    declared_functions.append(value)
+            if str(value) == "#":
+                comment_flag = True
+            
+            if dot_flag:
+                if str(ttype) != "Token.Operator" and str(ttype) != "Token.Punctuation":
+                    ptype = "Token.Other"
                 else:
-                    if str(value) not in declared_functions:
-                        ptype = "Token.Generic"
-            elif str(ttype) != "Token.Text" and str(ttype) != "Token.Comment":
-                type_flag = False
+                    dot_flag = False
+            if str(value) == ".":
+                dot_flag = True
+
+            if str(ttype) == "Token.Keyword.Type":
+                type_flag = True
+            else:
+                if str(ttype) == "Token.Name.Function":
+                    if type_flag:
+                        declared_functions.append(value)
+                    else:
+                        if str(value) not in declared_functions:
+                            ptype = "Token.Generic"
+                elif str(ttype) != "Token.Text" and str(ttype) != "Token.Comment":
+                    type_flag = False
+        print(ptype, value)
         mu_tokens.append((ptype, value))
 
     return mu_tokens
@@ -509,10 +520,14 @@ def compile_layer_source(layers):
         filtered_tokens = lex_passes(tokens)
         for ttype, value in filtered_tokens:
             if str(ttype) == "Token.Name" or str(ttype) == "Token.Name.Function":
-                value = get_prefix(index) + value
-
+                if str(value) != "location":
+                    private_mod = ""
+                    prefix_suff = "_"
+                    if str(value).startswith("_"):
+                        private_mod = "_"
+                        prefix_suff = ""
+                    value = private_mod + get_prefix(index) + prefix_suff + value
             compiled_source.append(value)
-
     return compiled_source
 
 
@@ -541,19 +556,20 @@ def compile_function_source(layers):
         if blend_mode not in used_blendmodes:
             used_blendmodes.append(blend_mode)
 
-        compiled_function.append("PixelOutput " + get_prefix(index) + "layer = " + get_prefix(input_index) + "layer;" + "\n")
-        compiled_function.append(get_prefix(index) + "COMMON_PIXEL_SHADER(S, " + get_prefix(index) + "layer);" + "\n")
+        compiled_function.append("PixelOutput " + get_prefix(index) + "_" + "layer = " + get_prefix(input_index) + "_" + "layer;" + "\n")
+        compiled_function.append(get_prefix(index) + "_" + "COMMON_PIXEL_SHADER(S, " + get_prefix(index) + "_" + "layer);" + "\n")
         if masked_layer: 
-            compiled_function.append(get_prefix(index) + "layer.color *= " + get_prefix(masking_index) + "layer.g;" + "\n")
+            compiled_function.append(get_prefix(index) + "_" + "layer.color *= " + get_prefix(masking_index) + "_" + "layer.g;" + "\n")
         if not mute_layer:
             if solo_layer:
-                compiled_function.append("compilation_layer = " + get_prefix(index) + "layer;" + "\n")
+                compiled_function.append("compilation_layer = " + get_prefix(index) + "_" + "layer;" + "\n")
             else: 
-                compiled_function.append(get_blend(blend_mode) + "(compilation_layer, " + get_prefix(index) + "layer);" + "\n")
+                compiled_function.append(get_blend(blend_mode) + "(compilation_layer, " + get_prefix(index) + "_" + "layer);" + "\n")
         
     compiled_function.append("""
             PO = compilation_layer;\n
         }\n
+        
         """)
 
     for used_blend in used_blendmodes:
@@ -684,7 +700,12 @@ class BeerMaterial(bpy.types.PropertyGroup):
         resources = {}
         layer_parameters = layer.material.malt.parameters.get_parameters(resources, overrides)
         for key, value in layer_parameters.items():
-            new_key = get_prefix(layer["index"]) + key
+            private_mod = ""
+            prefix_suff = "_"
+            if str(key).startswith("_"):
+                private_mod = "_"
+                prefix_suff = ""
+            new_key = private_mod + get_prefix(layer["index"]) + prefix_suff + key
             if new_key in self.material.malt.parameters: 
                 self.material.malt.parameters[new_key] = value
 
