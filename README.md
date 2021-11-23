@@ -22,7 +22,7 @@ Installation of the *BlenderBeer* addon for *Blender* currently requires *prior*
 - Create a user script folder if you don't have one already:
 [*Blender > Preferences > File Paths > Scripts*](https://docs.blender.org/manual/en/latest/editors/preferences/file_paths.html)
 - Install [BlenderMalt](https://github.com/bnpr/Malt)
-- Extract [Pygments](https://github.com/pygments/pygments) to your ```scripts\modules\``` folder.
+- Extract [Pygments](https://github.com/pygments/pygments/tree/master/pygments) to your ```scripts\modules\``` folder. (Note: Only the ```pygments``` subfolder of the git directory should be placed in  ```scripts\modules\```. )
 - Extract *BlenderBeer* to your ```scripts\addons\``` folder.
 
 # Instructions
